@@ -6,7 +6,7 @@ public class DriverManager {
 
     public DriverManager() {
         String browser=System.getProperty("browser","chrome");
-        DriverFactory.getInstance().initDriver(browser);
+        //DriverFactory.getInstance().initDriver(browser);
     }
 
     public WebDriver getDriver(){

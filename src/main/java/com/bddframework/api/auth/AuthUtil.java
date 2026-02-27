@@ -11,6 +11,9 @@ import java.util.Map;
 
 public class AuthUtil {
 
+    private AuthUtil() {
+    }
+
     private static String token;
 
     public static String getToken() throws JsonProcessingException {

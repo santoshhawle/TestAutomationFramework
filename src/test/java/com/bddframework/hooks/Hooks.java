@@ -2,6 +2,7 @@ package com.bddframework.hooks;
 
 import com.bddframework.stepdefinition.TestContext;
 import io.cucumber.java.*;
+import io.restassured.response.Response;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 
@@ -15,10 +16,10 @@ public class Hooks {
 
     @Before
     public void setUp(Scenario scenario){
-        System.out.println("Before");
+
     }
 
-    @AfterStep
+    @AfterStep("@ui")
     public void afterStep(Scenario scenario){
         if(scenario.isFailed()){
             byte[] screenshot = ((TakesScreenshot) context.getDriver()).getScreenshotAs(OutputType.BYTES);

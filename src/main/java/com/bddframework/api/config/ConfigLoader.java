@@ -1,19 +1,21 @@
 package com.bddframework.api.config;
 
-import org.apache.groovy.json.internal.IO;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
 public class ConfigLoader {
+
+    private ConfigLoader() {
+    }
+
     private static Properties properties=new Properties();
     static{
         try(FileInputStream fis=new FileInputStream("src/test/resources/configuration.properties")){
             properties.load(fis);
         }catch (IOException error){
-            throw new RuntimeException("Failed to load File");
+            throw new IllegalStateException(
+                    "Failed to load configuration.properties", error);
         }
     }
 

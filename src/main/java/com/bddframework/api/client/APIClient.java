@@ -13,13 +13,17 @@ public class APIClient {
             spec= RestAssured.given()
                     .baseUri(ConfigLoader.getBaseUri())
                     .contentType("application/json")
-                    .log()
-                    .all();
+                    .log().all();
 
     }
 
     public Response get(String endpoint){
             return spec.when().get(endpoint);
+    }
+
+    public Response post(String endpoint, Object payload){
+        return spec.when().accept("application/json")
+                .body(payload).post(endpoint);
     }
 
 }

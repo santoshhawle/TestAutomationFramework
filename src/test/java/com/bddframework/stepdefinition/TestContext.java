@@ -1,6 +1,7 @@
 package com.bddframework.stepdefinition;
 
 import com.bddframework.driver.DriverManager;
+import io.restassured.response.Response;
 import org.openqa.selenium.WebDriver;
 
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Map;
 public class TestContext {
 
     private WebDriver driver;
-
+    public Response response;
     private final Map<String, Object> testData=new HashMap<>();
 
     public TestContext(DriverManager driverManager) {
@@ -24,11 +25,12 @@ public class TestContext {
         this.driver = driver;
     }
 
-    public String getTestData(String key) {
-        return testData.get(key).toString();
+    @SuppressWarnings("unchecked")
+    public <T> T getTestData(String key) {
+        return (T) testData.get(key);
     }
 
-    public Map<String, Object> setTestData(String key, Object value) {
-        return (Map<String, Object>) testData.put(key, value);
+    public void setTestData(String key, Object value) {
+         testData.put(key, value);
     }
 }
