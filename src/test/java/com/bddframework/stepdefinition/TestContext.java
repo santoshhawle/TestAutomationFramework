@@ -24,7 +24,11 @@ public class TestContext {
         this.driver = driver;
     }
 
-    public Map<String, Object> getTestData() {
-        return testData;
+    public String getTestData(String key) {
+        return testData.get(key).toString();
+    }
+
+    public Map<String, Object> setTestData(String key, Object value) {
+        return (Map<String, Object>) testData.put(key, value);
     }
 }
