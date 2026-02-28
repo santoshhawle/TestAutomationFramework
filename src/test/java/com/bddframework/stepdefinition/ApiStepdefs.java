@@ -6,8 +6,11 @@ import com.bddframework.api.payloads.Booking;
 import com.bddframework.api.payloads.BookingDates;
 import com.bddframework.api.payloads.PartialBooking;
 import com.bddframework.api.utils.DataTableUtils;
+import com.bddframework.api.utils.ExcelUtils;
+import com.bddframework.api.utils.MapToPojoUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.PendingException;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -17,6 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class ApiStepdefs {
@@ -107,8 +113,11 @@ public class ApiStepdefs {
     }
 
     @When("I create a {string} with following details:")
-    public void iCreateABookingWithFollowingDetails(String endpoint,DataTable table) {
-        Booking bookingPayload= DataTableUtils.getBookingPayload(table);
+//    public void iCreateABookingWithFollowingDetails(String endpoint,DataTable table) {
+    public void iCreateABookingWithFollowingDetails(String endpoint) {
+        List<Map<String, String>> bookingData = ExcelUtils.readExcelDataBySheetName("src/test/resources/testdata/data.xlsx", "BookingData");
+        Booking bookingPayload=MapToPojoUtils.getBookingPayload(bookingData.get(0));
+        //Booking bookingPayload= DataTableUtils.getBookingPayload(table);
         CreateBookingClient bookingClient=new CreateBookingClient();
         Response createBookingResponse = bookingClient.createBooking(endpoint, bookingPayload);
         context.setTestData("statusCode",createBookingResponse.getStatusCode());
@@ -166,5 +175,19 @@ public class ApiStepdefs {
         Response response = apiClient.get(endpoint,bookingid);
         context.response=response;
         context.setTestData("statusCode",response.getStatusCode());
+    }
+
+    @When("I create a {string} with id {string}")
+    public void iCreateAWithId(String endpoint, String tc_id) {
+        List<Map<String, String>> bookingData = ExcelUtils.readExcelDataBySheetName("src/test/resources/testdata/data.xlsx", "BookingData");
+        Booking bookingPayload=MapToPojoUtils.getBookingPayload(bookingData.stream()
+                .filter(map -> tc_id.equals(map.get("TC_ID")))
+                .map(map -> new HashMap<>(map))
+                .findFirst()
+                .orElse(null));
+        CreateBookingClient bookingClient=new CreateBookingClient();
+        Response createBookingResponse = bookingClient.createBooking(endpoint, bookingPayload);
+        context.setTestData("statusCode",createBookingResponse.getStatusCode());
+        context.response=createBookingResponse;
     }
 }
