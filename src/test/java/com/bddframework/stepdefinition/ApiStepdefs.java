@@ -1,25 +1,28 @@
 package com.bddframework.stepdefinition;
 
 import com.bddframework.api.auth.AuthUtil;
-import com.bddframework.api.client.APIClient;
-import com.bddframework.api.client.CreateBookingClient;
-import com.bddframework.api.client.GetBookingClient;
+import com.bddframework.api.client.*;
 import com.bddframework.api.payloads.Booking;
 import com.bddframework.api.payloads.BookingDates;
+import com.bddframework.api.payloads.PartialBooking;
+import com.bddframework.api.utils.DataTableUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.PendingException;
-import io.cucumber.java.bs.A;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
-import java.util.Map;
+
 
 public class ApiStepdefs {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(ApiStepdefs.class);
 
     TestContext context;
 
@@ -81,43 +84,87 @@ public class ApiStepdefs {
 
     @And("the response should contain object {string}")
     public void theResponseShouldContainObject(String arg0) {
-
+        Object bookingObject =context.response.jsonPath().get("booking");
+        Assert.assertNotNull(bookingObject);
     }
 
     @And("the response field {string} should equal {string}")
-    public void theResponseFieldShouldEqual(String arg0, String arg1) {
-
+    public void theResponseFieldShouldEqual(String key, String expectedValue) {
+        String actualValue = context.response.jsonPath().get(key);
+        Assert.assertEquals(actualValue,expectedValue);
     }
 
     @And("the response field {string} should equal {int}")
-    public void theResponseFieldShouldEqual(String arg0, int arg1) {
-
+    public void theResponseFieldShouldEqual(String key, int expectedValue) {
+        int actualValue = context.response.jsonPath().get(key);
+        Assert.assertEquals(actualValue,expectedValue);
     }
 
     @And("the response field {string} should equal true")
-    public void theResponseFieldShouldEqualTrue(String arg0) {
-
+    public void theResponseFieldShouldEqualTrue(String key) {
+        boolean actualValue = context.response.jsonPath().get(key);
+        Assert.assertTrue(actualValue);
     }
 
     @When("I create a {string} with following details:")
     public void iCreateABookingWithFollowingDetails(String endpoint,DataTable table) {
-        Map<String, String> map = table.asMap(String.class, String.class);
-
-        Booking bookingPayload=new Booking(
-                map.get("firstname"),
-                map.get("lastname"),
-                Integer.parseInt(map.get("totalprice")),
-                Boolean.parseBoolean(map.get("depositpaid")),
-                new BookingDates(
-                        map.get("checkin"),
-                        map.get("checkout")
-                ),
-                map.get("additionalneeds")
-        );
-
+        Booking bookingPayload= DataTableUtils.getBookingPayload(table);
         CreateBookingClient bookingClient=new CreateBookingClient();
         Response createBookingResponse = bookingClient.createBooking(endpoint, bookingPayload);
         context.setTestData("statusCode",createBookingResponse.getStatusCode());
         context.response=createBookingResponse;
+    }
+
+    @When("I send a PUT request to {string} with body:")
+    public void iSendAPUTRequestToWithBody(String endpoint,DataTable table) {
+        Booking bookingPayload= DataTableUtils.getBookingPayload(table);
+        String token = context.getTestData("token");
+        UpdateBookingClient updateBookingClient=new UpdateBookingClient();
+        Response response = updateBookingClient.updateBooking(context.getTestData("bookingid"),endpoint,bookingPayload,token);
+        context.setTestData("statusCode",response.getStatusCode());
+        context.response=response;
+    }
+
+    @And("the response field {string} should equal false")
+    public void theResponseFieldShouldEqualFalse(String key) {
+        boolean actualValue = context.response.jsonPath().get(key);
+        Assert.assertFalse(actualValue);
+    }
+
+    @When("I create a {string} with following details and store booking id:")
+    public void iCreateAWithFollowingDetailsAndStoreBookingId(String endpoint, DataTable table) {
+        Booking bookingPayload= DataTableUtils.getBookingPayload(table);
+        CreateBookingClient bookingClient=new CreateBookingClient();
+        Response createBookingResponse = bookingClient.createBooking(endpoint, bookingPayload);
+        context.setTestData("bookingid",createBookingResponse.jsonPath().get("bookingid"));
+    }
+
+    @When("I send a PATCH request to {string} with body:")
+    public void iSendAPATCHRequestToWithBody(String endpoint, DataTable table) {
+        PartialBooking partialBookingPayload = DataTableUtils.getPartialBookingPayload(table);
+        UpdateBookingClient updateBookingClient=new UpdateBookingClient();
+        String token = context.getTestData("token");
+        Response response = updateBookingClient.partialBookingUpdate(context.getTestData("bookingid"), endpoint, partialBookingPayload, token);
+        context.response=response;
+        context.setTestData("statusCode",response.getStatusCode());
+    }
+
+    @When("I send a DELETE request to {string}")
+    public void iSendADELETERequestTo(String endpoint) {
+        DeleteBookingClient deleteBookingClient=new DeleteBookingClient();
+        String token = context.getTestData("token");
+        Response response = deleteBookingClient.deleteBooking(context.getTestData("bookingid"),endpoint, token);
+        context.response=response;
+        context.setTestData("statusCode",response.getStatusCode());
+        logger.info("Status Code is "+ response.getStatusCode());
+    }
+
+    @When("I send a GET request with bookingId to {string}")
+    public void iSendAGETRequestWithBookingIdTo(String endpoint) {
+        APIClient apiClient=new APIClient();
+        int bookingid = context.getTestData("bookingid");
+        Response response = apiClient.get(endpoint,bookingid);
+        context.response=response;
+        context.setTestData("statusCode",response.getStatusCode());
     }
 }

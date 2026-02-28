@@ -11,7 +11,7 @@ public class TestContext {
 
     private WebDriver driver;
     public Response response;
-    private final Map<String, Object> testData=new HashMap<>();
+    private final ThreadLocal<Map<String, Object>> testData=ThreadLocal.withInitial(HashMap::new);
 
     public TestContext(DriverManager driverManager) {
         this.driver = driverManager.getDriver();
@@ -27,10 +27,10 @@ public class TestContext {
 
     @SuppressWarnings("unchecked")
     public <T> T getTestData(String key) {
-        return (T) testData.get(key);
+        return (T) testData.get().get(key);
     }
 
     public void setTestData(String key, Object value) {
-         testData.put(key, value);
+         testData.get().put(key, value);
     }
 }

@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Restful Booker API" verbose="1" >
+    <test name="Booking">
+        <classes>
+            <class name="com.bddframework.runner.TestRunner"></class>
+        </classes>
+    </test>
+</suite>
