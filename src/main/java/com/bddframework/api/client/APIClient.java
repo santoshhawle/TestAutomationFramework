@@ -1,26 +1,40 @@
 package com.bddframework.api.client;
 
 import com.bddframework.api.config.ConfigLoader;
-import com.bddframework.api.exception.APIException;
+import com.bddframework.api.filters.RequestSpecLogFilter;
+import com.bddframework.api.filters.ResponseSpecLogFilter;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class APIClient {
-    private static final Logger logger =
-            LoggerFactory.getLogger(APIClient.class);
     protected RequestSpecification spec;
+
+
 
     public APIClient() {
         spec = RestAssured.given()
                 .baseUri(ConfigLoader.getBaseUri())
                 .contentType("application/json");
 
+        if (isRequestLoggingEnabled()) {
+            spec.filter(new RequestSpecLogFilter());
+        }else if (isResponseLoggingEnabled()) {
+            spec.filter(new ResponseSpecLogFilter());
+        }
+    }
+
+    private static boolean isRequestLoggingEnabled(){
+            return Boolean.valueOf(ConfigLoader.getProperty("requestLog"));
+    }
+
+    private static boolean isResponseLoggingEnabled(){
+        return Boolean.valueOf(ConfigLoader.getProperty("responseLog"));
     }
 
     public Response get(String endpoint) {
@@ -28,7 +42,7 @@ public class APIClient {
         try {
             response=spec.when().get(endpoint);
         } catch (Exception e) {
-            logger.error("Get request failed for endpoint:" + endpoint + ":" + e.getCause());
+            log.error("Get request failed for endpoint:" + endpoint + ":" + e.getCause());
         }
         return response ;
     }

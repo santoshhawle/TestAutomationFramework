@@ -9,8 +9,12 @@ import org.testng.xml.XmlSuite;
 @CucumberOptions(
         features = "classpath:features",
         glue = {"com.bddframework.stepdefinition","com.bddframework.hooks"},
-        plugin = {"pretty", "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"},
-        tags = "@api"
+        plugin = {
+                "pretty",
+                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
+                "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
+        },
+        tags = "@apir"
         )
 public class TestRunner extends AbstractTestNGCucumberTests {
 
