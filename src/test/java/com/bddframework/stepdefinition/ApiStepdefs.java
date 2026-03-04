@@ -9,7 +9,6 @@ import com.bddframework.api.utils.ExcelUtils;
 import com.bddframework.api.utils.MapToPojoUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.PendingException;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -21,6 +20,8 @@ import org.testng.Assert;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 @Slf4j
 public class ApiStepdefs {
@@ -67,6 +68,8 @@ public class ApiStepdefs {
 
     @And("the response body should be empty")
     public void theResponseBodyShouldBeEmpty() {
+        Assert.assertTrue(context.response.getTime()<1000);
+
         Assert.assertFalse(context.response.body().toString().isEmpty(),
                 "Expected response body to NOT be empty");
     }
@@ -184,5 +187,12 @@ public class ApiStepdefs {
         Response createBookingResponse = bookingClient.createBooking(endpoint, bookingPayload);
         context.setTestData("statusCode",createBookingResponse.getStatusCode());
         context.response=createBookingResponse;
+    }
+
+    @And("verify the response schema")
+    public void verifyTheResponseSchema() {
+        context.response.then()
+                .assertThat()
+                .body(matchesJsonSchemaInClasspath("schema/bookingResponseSchema.json"));
     }
 }

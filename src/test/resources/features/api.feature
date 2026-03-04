@@ -52,6 +52,7 @@ Feature: Restful Booker API - Complete Contract & Field Validation
     And the response field "booking.bookingdates.checkin" should equal "2026-03-01"
     And the response field "booking.bookingdates.checkout" should equal "2026-03-05"
     And the response field "booking.additionalneeds" should equal "Breakfast"
+    And verify the response schema
     Examples:
       | TC_ID |
       | TC01  |
