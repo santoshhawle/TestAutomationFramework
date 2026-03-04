@@ -21,7 +21,7 @@ permissions:
   security-events: write
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +35,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B -V clean test --file pom.xml
 
-    # Generate Allure HTML report from results in target/results (if present)
+    # Generate Allure HTML report (from target/allure-results)
     - name: Generate Allure HTML report (from target/allure-results)
       if: always()
       run: |
@@ -66,3 +66,27 @@ jobs:
       with:
         name: allure-report
         path: target/allure-report
+
+  sonar:
+    name: SonarQube Scan
+    needs: test
+    runs-on: ubuntu-latest
+    # Only run the Sonar job if a SONAR_TOKEN secret is configured
+    if: ${{ secrets.SONAR_TOKEN != '' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run SonarQube analysis
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        echo "Running SonarQube analysis (skip tests)"
+        # Customize with -Dsonar.host.url or -Dsonar.organization if needed for SonarCloud
+        mvn -B -DskipTests sonar:sonar -Dsonar.login=${SONAR_TOKEN}
