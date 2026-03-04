@@ -34,3 +34,34 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B -V clean test --file pom.xml
+
+    # Upload common test artifacts so you can download and inspect reports from the Actions run
+    - name: Archive Surefire / Failsafe reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: surefire-reports
+        path: |
+          target/surefire-reports
+          target/failsafe-reports
+
+    - name: Upload Allure results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-results
+        path: target/allure-results
+
+    - name: Upload Allure HTML report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-report
+        path: target/allure-report
+
+    - name: Upload HTML test-output
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: html-test-output
+        path: test-output/HtmlReport
