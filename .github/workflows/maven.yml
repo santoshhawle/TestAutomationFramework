@@ -35,33 +35,24 @@ jobs:
     - name: Build with Maven
       run: mvn -B -V clean test --file pom.xml
 
-    # Upload common test artifacts so you can download and inspect reports from the Actions run
-    - name: Archive Surefire / Failsafe reports
+    # Generate Allure HTML report from results in target/results (if present)
+    - name: Generate Allure HTML report (from target/results)
       if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: surefire-reports
-        path: |
-          target/surefire-reports
-          target/failsafe-reports
+      run: |
+        echo "Listing target before generation:" && ls -la target || true
+        if [ -d target/allure-results ]; then
+          echo "Found target/allure-results - generating Allure report into target/allure-report"
+          mvn io.qameta.allure:allure-maven:2.14.0:report -Dallure.results.directory=target/results -Dallure.report.directory=target/allure-report || true
+          echo "After generation, listing target/allure-report:"
+          ls -la target/allure-report || true
+        else
+          echo "No target/results directory found; skipping Allure generation."
+        fi
 
-    - name: Upload Allure results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: allure-results
-        path: target/allure-results
-
+    # Upload only the generated Allure HTML report as the single artifact
     - name: Upload Allure HTML report
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: allure-report
         path: target/allure-report
-
-    - name: Upload HTML test-output
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: html-test-output
-        path: test-output/HtmlReport
