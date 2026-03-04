@@ -67,26 +67,29 @@ jobs:
         name: allure-report
         path: target/allure-report
 
+  # yaml
   sonar:
     name: SonarQube Scan
     needs: test
     runs-on: ubuntu-latest
-    # Only run the Sonar job if a SONAR_TOKEN secret is configured
-    if: ${{ secrets.SONAR_TOKEN != '' }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 11
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        cache: maven
+      - uses: actions/checkout@v4
 
-    - name: Run SonarQube analysis
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: |
-        echo "Running SonarQube analysis (skip tests)"
-        # Customize with -Dsonar.host.url or -Dsonar.organization if needed for SonarCloud
-        mvn -B -DskipTests sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+      - name: Skip Sonar if SONAR_TOKEN not set
+        if: ${{ secrets.SONAR_TOKEN == '' }}
+        run: |
+          echo "SONAR_TOKEN not configured; skipping SonarQube scan."
+      - name: Set up JDK 11
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run SonarQube analysis
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
