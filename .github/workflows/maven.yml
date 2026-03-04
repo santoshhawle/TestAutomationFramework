@@ -14,6 +14,12 @@ on:
   pull_request:
     branches: [ "master" ]
 
+# Grant minimal permissions to the GITHUB_TOKEN. `security-events: write` is required
+# for the dependency-submission action to call the dependency-graph API successfully.
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,5 +41,5 @@ jobs:
     # because the `GITHUB_TOKEN` has restricted permissions for those events. To avoid noise,
     # run this step only on push events (or configure a PAT with the required scopes).
     - name: Update dependency graph
-      if: github.event_name == 'push'
+      if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
       uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
