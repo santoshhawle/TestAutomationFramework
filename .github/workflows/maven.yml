@@ -76,20 +76,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Skip Sonar if SONAR_TOKEN not set
-        if: ${{ secrets.SONAR_TOKEN == '' }}
-        run: |
-          echo "SONAR_TOKEN not configured; skipping SonarQube scan."
+      # Always install JDK 11 (no secrets referenced in job expressions)
       - name: Set up JDK 11
-        if: ${{ secrets.SONAR_TOKEN != '' }}
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
           cache: maven
 
-      - name: Run SonarQube analysis
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+      # Run SonarQube analysis, but check for the secret at runtime.
+      # This avoids using `secrets` inside `if:` expressions which triggered the parse error.
+      - name: Run SonarQube analysis (skip if no SONAR_TOKEN)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "SONAR_TOKEN not set; skipping SonarQube analysis."
+            exit 0
+          fi
+
+          echo "SONAR_TOKEN found; running SonarQube analysis..."
+          # Example Maven Sonar invocation; adjust as needed for your project
+          mvn -B -Dsonar.login="$SONAR_TOKEN" verify sonar:sonar
