@@ -3,7 +3,6 @@ package com.bddframework.stepdefinition;
 import com.bddframework.api.auth.AuthUtil;
 import com.bddframework.api.client.*;
 import com.bddframework.api.payloads.Booking;
-import com.bddframework.api.payloads.BookingDates;
 import com.bddframework.api.payloads.PartialBooking;
 import com.bddframework.api.utils.DataTableUtils;
 import com.bddframework.api.utils.ExcelUtils;
@@ -16,19 +15,15 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+@Slf4j
 public class ApiStepdefs {
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(ApiStepdefs.class);
 
     TestContext context;
 
@@ -165,7 +160,7 @@ public class ApiStepdefs {
         Response response = deleteBookingClient.deleteBooking(context.getTestData("bookingid"),endpoint, token);
         context.response=response;
         context.setTestData("statusCode",response.getStatusCode());
-        logger.info("Status Code is "+ response.getStatusCode());
+        log.info("Status Code is "+ response.getStatusCode());
     }
 
     @When("I send a GET request with bookingId to {string}")
