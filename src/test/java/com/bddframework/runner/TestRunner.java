@@ -1,7 +1,9 @@
 package com.bddframework.runner;
 
+import io.cucumber.java.Before;
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
+import org.flywaydb.core.Flyway;
 import org.testng.ITestContext;
 import org.testng.annotations.DataProvider;
 import org.testng.xml.XmlSuite;
@@ -29,5 +31,19 @@ public class TestRunner extends AbstractTestNGCucumberTests {
         xmlSuite.setParallel(XmlSuite.ParallelMode.TESTS);
         xmlSuite.setDataProviderThreadCount(2);
         xmlSuite.setThreadCount(2);
+    }
+
+    @Before(order = 1)
+    public void migrateDB(){
+        Flyway flyway = Flyway.configure()
+                .dataSource(
+                        "jdbc:mysql://localhost:3306/company_big",
+                        "root",
+                        "root")
+                .load();
+
+        flyway.clean();      // optional for test environments
+        flyway.migrate();    // run migrations
+    }
     }
 }
